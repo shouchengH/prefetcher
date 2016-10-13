@@ -16,6 +16,8 @@
 
 #include "impl.c"
 
+static int do_function = 0;
+
 static long diff_in_us(struct timespec t1, struct timespec t2)
 {
     struct timespec diff;
@@ -31,7 +33,7 @@ static long diff_in_us(struct timespec t1, struct timespec t2)
 
 int main(int argc, char *argv[])
 {
-    /* verify the result of 4x4 matrix */
+    /* verify the result of 4x4 matrix
     {
         int testin[16] = { 0, 1,  2,  3,  4,  5,  6,  7,
                            8, 9, 10, 11, 12, 13, 14, 15
@@ -56,6 +58,12 @@ int main(int argc, char *argv[])
         assert(0 == memcmp(testout, expected, 16 * sizeof(int)) &&
                "Verification fails");
     }
+    */
+
+    if (argc < 2)
+        do_function = 0;
+    else
+        do_function = atoi(argv[1]);
 
     {
         struct timespec start, end;
@@ -69,20 +77,24 @@ int main(int argc, char *argv[])
             for (int x = 0; x < TEST_W; x++)
                 *(src + y * TEST_W + x) = rand();
 
-        clock_gettime(CLOCK_REALTIME, &start);
-        sse_prefetch_transpose(src, out0, TEST_W, TEST_H);
-        clock_gettime(CLOCK_REALTIME, &end);
-        printf("sse prefetch: \t %ld us\n", diff_in_us(start, end));
-
-        clock_gettime(CLOCK_REALTIME, &start);
-        sse_transpose(src, out1, TEST_W, TEST_H);
-        clock_gettime(CLOCK_REALTIME, &end);
-        printf("sse: \t\t %ld us\n", diff_in_us(start, end));
-
-        clock_gettime(CLOCK_REALTIME, &start);
-        naive_transpose(src, out2, TEST_W, TEST_H);
-        clock_gettime(CLOCK_REALTIME, &end);
-        printf("naive: \t\t %ld us\n", diff_in_us(start, end));
+        if (do_function == 1 || do_function == 0) {
+            clock_gettime(CLOCK_REALTIME, &start);
+            sse_prefetch_transpose(src, out0, TEST_W, TEST_H);
+            clock_gettime(CLOCK_REALTIME, &end);
+            printf("sse prefetch: \t %ld us\n", diff_in_us(start, end));
+        }
+        if (do_function == 2 || do_function == 0) {
+            clock_gettime(CLOCK_REALTIME, &start);
+            sse_transpose(src, out1, TEST_W, TEST_H);
+            clock_gettime(CLOCK_REALTIME, &end);
+            printf("sse: \t\t %ld us\n", diff_in_us(start, end));
+        }
+        if (do_function == 3 || do_function == 0) {
+            clock_gettime(CLOCK_REALTIME, &start);
+            naive_transpose(src, out2, TEST_W, TEST_H);
+            clock_gettime(CLOCK_REALTIME, &end);
+            printf("naive: \t\t %ld us\n", diff_in_us(start, end));
+        }
 
         free(src);
         free(out0);
